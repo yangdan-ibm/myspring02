@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" th:href="@{/style.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <title>Add food to order</title>
+</head>
+<body>
+<div class="container">
+    <h2>Add food order</h2>
+    <form class="header" th:action="@{/foods}" method="post" th:object="${foodObject}">
+        <input type="text" id="input" placeholder="New Item..." th:field="*{food_name}">
+        <button type="submit" class="addBtn">Add</button>
+    </form>
+    <ul th:each="food: ${foodlist}">
+        <li th:class="${food.status} == 2 ? 'checked': '' "
+            th:onclick="'javascript:updateFood(this,' + ${food.id} + ','+${food.status} +')'">
+            <span th:text="${food.food_name}"></span>
+            <span class="close" th:onclick="'javascript:deleteFood(event,this,' + ${food.id} + ')'">x</span>
+        </li>
+    </ul>
+</div>
+<script>
+    const addFood = function() {
+        confirm("Do you want to continue ?");
+        let food_name = document.getElementById('food_name').value;
+        console.log(food_name);
+        const data = {
+            foodname: food_name
+        }
+        fetch('/foods', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data),
+        }).then(function(response) {
+            location.reload();
+        })
+    }
+
+    const updateFood = function (element,id,status) {
+        const notDone = 1;
+        const done = 2;
+        const data = {
+            status: status === done ? notDone : done
+        }
+        fetch('/foods' + id, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data),
+        }).then(function (response) {
+            if (status === done) {
+                element.classList.remove("checked");
+            } else {
+                element.classList.add("checked");
+            }
+            location.reload();
+        })
+    }
+
+    const deleteFood = function(event,element,id) {
+        confirm("Do you want to continue ?");
+        event.stopPropagation();
+        fetch('foods/'+ id, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+        }).then(function(response) {
+            element.parentNode.parentNode.parentNode.removeChild(element.parentNode.parentNode);
+         })
+    }
+</script>
+</body>
+</html>
